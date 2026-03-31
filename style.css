@@ -1,0 +1,42 @@
+body {
+  text-align: center;
+  background: #0f172a;
+  color: white;
+  font-family: Arial;
+}
+
+button {
+  margin: 5px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+svg {
+  width: 90%;
+  height: 450px;
+  border: 2px solid white;
+  background: #1e293b;
+}
+
+circle {
+  fill: #38bdf8;
+  cursor: pointer;
+}
+
+line {
+  stroke: white;
+  stroke-width: 2;
+}
+
+text {
+  fill: white;
+  font-size: 12px;
+}
+
+.visited {
+  fill: orange;
+}
+
+.active {
+  fill: red;
+}
