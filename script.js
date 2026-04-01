@@ -11,19 +11,20 @@ svg.onclick = (e) => {
   let x = e.clientX - rect.left;
   let y = e.clientY - rect.top;
 
-  let c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-  c.setAttribute("cx", x);
-  c.setAttribute("cy", y);
-  c.setAttribute("r", 15);
+  let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  circle.setAttribute("cx", x);
+  circle.setAttribute("cy", y);
+  circle.setAttribute("r", 15);
 
-  let node = { el: c, x, y, n: [] };
+  let node = { el: circle, neighbors: [] };
 
-  c.onclick = (ev) => {
+  circle.onclick = (ev) => {
     ev.stopPropagation();
 
     if (mode === "edge") {
-      if (!selected) selected = node;
-      else {
+      if (!selected) {
+        selected = node;
+      } else {
         createEdge(selected, node);
         selected = null;
       }
@@ -31,58 +32,53 @@ svg.onclick = (e) => {
   };
 
   nodes.push(node);
-  svg.appendChild(c);
+  svg.appendChild(circle);
 };
 
-// 🔗 Create Edge with Weight
+// 🔗 Create Edge
 function createEdge(a, b) {
-  let weight = prompt("Enter weight:", "1");
-
   let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-  line.setAttribute("x1", a.x);
-  line.setAttribute("y1", a.y);
-  line.setAttribute("x2", b.x);
-  line.setAttribute("y2", b.y);
+
+  line.setAttribute("x1", a.el.getAttribute("cx"));
+  line.setAttribute("y1", a.el.getAttribute("cy"));
+  line.setAttribute("x2", b.el.getAttribute("cx"));
+  line.setAttribute("y2", b.el.getAttribute("cy"));
 
   svg.insertBefore(line, svg.firstChild);
 
-  // weight label
-  let text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-  text.setAttribute("x", (a.x + b.x) / 2);
-  text.setAttribute("y", (a.y + b.y) / 2);
-  text.textContent = weight;
-
-  svg.appendChild(text);
-
-  a.n.push(b);
-  b.n.push(a);
+  a.neighbors.push(b);
+  b.neighbors.push(a);
 }
 
 // ⏱ Delay
 function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // 🔵 BFS
 async function runBFS() {
   reset();
+  if (nodes.length === 0) return;
 
-  let q = [nodes[0]];
-  let vis = new Set();
+  let queue = [nodes[0]];
+  let visited = new Set();
 
-  while (q.length) {
-    let cur = q.shift();
-    if (vis.has(cur)) continue;
+  while (queue.length > 0) {
+    let current = queue.shift();
 
-    vis.add(cur);
+    if (visited.has(current)) continue;
 
-    cur.el.classList.add("active");
+    visited.add(current);
+
+    current.el.classList.add("active");
     await sleep(400);
-    cur.el.classList.remove("active");
-    cur.el.classList.add("visited");
+    current.el.classList.remove("active");
+    current.el.classList.add("visited");
 
-    for (let n of cur.n) {
-      if (!vis.has(n)) q.push(n);
+    for (let neighbor of current.neighbors) {
+      if (!visited.has(neighbor)) {
+        queue.push(neighbor);
+      }
     }
   }
 }
@@ -90,29 +86,31 @@ async function runBFS() {
 // 🔴 DFS
 async function runDFS() {
   reset();
-  let vis = new Set();
+  let visited = new Set();
 
   async function dfs(node) {
-    if (vis.has(node)) return;
+    if (visited.has(node)) return;
 
-    vis.add(node);
+    visited.add(node);
 
     node.el.classList.add("active");
     await sleep(400);
     node.el.classList.remove("active");
     node.el.classList.add("visited");
 
-    for (let n of node.n) {
-      await dfs(n);
+    for (let neighbor of node.neighbors) {
+      await dfs(neighbor);
     }
   }
 
-  if (nodes.length) dfs(nodes[0]);
+  if (nodes.length > 0) {
+    dfs(nodes[0]);
+  }
 }
 
 // ♻️ Reset
 function reset() {
-  nodes.forEach(n => {
-    n.el.classList.remove("visited", "active");
+  nodes.forEach(node => {
+    node.el.classList.remove("visited", "active");
   });
 }
