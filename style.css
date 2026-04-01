@@ -28,11 +28,6 @@ line {
   stroke-width: 2;
 }
 
-text {
-  fill: white;
-  font-size: 12px;
-}
-
 .visited {
   fill: orange;
 }
